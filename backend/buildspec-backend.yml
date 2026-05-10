@@ -1,0 +1,39 @@
+version: 0.2
+
+phases:
+
+  pre_build:
+    commands:
+
+      - echo Logging in to Amazon ECR...
+
+      - aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 245246852393.dkr.ecr.ap-south-1.amazonaws.com
+
+      - BACKEND_REPO=cloudcart-backend
+
+      - AWS_ACCOUNT_ID=245246852393
+      - AWS_DEFAULT_REGION=ap-south-1
+
+      - IMAGE_TAG=latest
+
+  build:
+    commands:
+
+      - echo Building backend Docker image...
+
+      - cd backend
+
+      - docker build -t $BACKEND_REPO:$IMAGE_TAG .
+
+      - docker tag $BACKEND_REPO:$IMAGE_TAG $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$BACKEND_REPO:$IMAGE_TAG
+
+      - cd ..
+
+  post_build:
+    commands:
+
+      - echo Pushing backend image to ECR...
+
+      - docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$BACKEND_REPO:$IMAGE_TAG
+
+      - echo Backend build completed successfully
